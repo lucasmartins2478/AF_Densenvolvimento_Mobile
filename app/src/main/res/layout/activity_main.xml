@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:background="@color/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:text="Notation"
+            android:textColor="@color/white"
+            android:textSize="30dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnJournal"
+        android:layout_width="140dp"
+        android:layout_height="110dp"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="52dp"
+        android:onClick="openJournal"
+        android:text="Anotações"
+        android:background="@color/btn_background"
+        android:paddingTop="25dp"
+        android:textColor="@color/white"
+        android:drawableTop="@drawable/journal_icon"
+        android:textAllCaps="false"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnCalendar"
+        android:layout_width="140dp"
+        android:layout_height="110dp"
+        android:layout_marginTop="52dp"
+        android:layout_marginEnd="52dp"
+        android:onClick="openCalendar"
+        android:text="Agenda"
+        android:background="@color/btn_background"
+        android:textColor="@color/white"
+        android:paddingTop="25dp"
+        android:textAllCaps="false"
+        android:drawableTop="@drawable/calendar_icon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnAlarm"
+        android:layout_width="140dp"
+        android:layout_height="110dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="52dp"
+        android:onClick="openAlarm"
+        android:text="Alarme"
+        android:background="@color/btn_background"
+        android:textColor="@color/white"
+        android:paddingTop="25dp"
+        android:drawableTop="@drawable/alarm_icon"
+        android:textAllCaps="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnCalendar" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnTasks"
+        android:layout_width="140dp"
+        android:layout_height="110dp"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="40dp"
+        android:onClick="openTasks"
+        android:text="Tarefas"
+        android:background="@color/btn_background"
+        android:textColor="@color/white"
+        android:paddingTop="25dp"
+        android:drawableTop="@drawable/tasks_icon"
+        android:textAllCaps="false"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnJournal" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnConfiguration"
+        android:layout_width="140dp"
+        android:layout_height="110dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="52dp"
+        android:background="@color/btn_background"
+        android:textColor="@color/white"
+        android:onClick="openConfiguration"
+        android:text="Configurações"
+        android:paddingTop="25dp"
+        android:drawableTop="@drawable/settings_icon"
+        android:textAllCaps="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnAlarm" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnProfile"
+        android:layout_width="140dp"
+        android:layout_height="110dp"
+        android:background="@color/btn_background"
+        android:textColor="@color/white"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="40dp"
+        android:onClick="openProfile"
+        android:text="Perfil"
+        android:paddingTop="25dp"
+        android:drawableTop="@drawable/profile_icon"
+        android:textAllCaps="false"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnTasks" />
+</androidx.constraintlayout.widget.ConstraintLayout>
