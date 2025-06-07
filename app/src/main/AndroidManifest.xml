@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
@@ -16,6 +16,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Notation"
         tools:targetApi="31">
+        <activity
+            android:name=".AddNote"
+            android:exported="false" />
         <activity
             android:name=".Register"
             android:exported="false" />
@@ -50,21 +53,24 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".AlarmReceiver"
+        <receiver
+            android:name=".AlarmReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.example.notation.ALARM_TRIGGERED" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".AlarmDismissReceiver"
+        <receiver
+            android:name=".AlarmDismissReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.example.notation.ALARM_DISMISS" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".SnoozeReceiver"
+        <receiver
+            android:name=".SnoozeReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
