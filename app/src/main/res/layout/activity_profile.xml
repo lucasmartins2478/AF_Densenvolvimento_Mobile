@@ -48,4 +48,20 @@
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/profileName" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnDeleteAccount"
+        android:layout_width="257dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="252dp"
+        android:layout_marginBottom="16dp"
+        android:background="@color/btn_background"
+        android:text="Deletar Conta"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/logout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/profileEmail" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

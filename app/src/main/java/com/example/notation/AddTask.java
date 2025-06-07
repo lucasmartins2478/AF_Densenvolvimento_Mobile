@@ -14,18 +14,20 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class AddNote extends AppCompatActivity {
+public class AddTask extends AppCompatActivity {
     private EditText etTarefa, etDescricao;
     private Spinner spPrioridade;
     private CheckBox cbConcluida;
     private AppCompatButton btnSalvar;
-    private String noteId = null;
+    private String taskId = null;
 
     private FirebaseFirestore db;
     @Override
@@ -57,7 +59,7 @@ public class AddNote extends AppCompatActivity {
         Intent intent = getIntent();
 
         if (intent != null && intent.hasExtra("id")) {
-            noteId = intent.getStringExtra("id");
+            taskId = intent.getStringExtra("id");
             etTarefa.setText(intent.getStringExtra("tarefa"));
             etDescricao.setText(intent.getStringExtra("descricao"));
             spPrioridade.setSelection(getSpinnerIndex(intent.getStringExtra("prioridade")));
@@ -69,14 +71,20 @@ public class AddNote extends AppCompatActivity {
 
         btnSalvar.setOnClickListener(v -> {
             if (isEdicao) {
-                atualizarNota();
+                atualizarTarefa();
             } else {
-                salvarNota();
+                salvarTarefa();
             }
         });
     }
 
-    private void salvarNota() {
+    private void salvarTarefa() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Toast.makeText(this, "Usuário não autenticado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String tarefa = etTarefa.getText().toString().trim();
         String descricao = etDescricao.getText().toString().trim();
         String prioridade = spPrioridade.getSelectedItem().toString();
@@ -87,16 +95,14 @@ public class AddNote extends AppCompatActivity {
             return;
         }
 
-        Map<String, Object> nota = new HashMap<>();
-        nota.put("tarefa", tarefa);
-        nota.put("descricao", descricao);
-        nota.put("prioridade", prioridade);
-        nota.put("concluida", concluida);
-
-        db.collection("notes")
-                .add(nota)
+        Map<String, Object> task = new HashMap<>();
+        task.put("tarefa", tarefa);
+        task.put("descricao", descricao);
+        task.put("prioridade", prioridade);
+        task.put("concluida", concluida);
+        db.collection("users").document(user.getUid()).collection("tasks").add(task)
                 .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(this, "Nota salva!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Tarefa salva!", Toast.LENGTH_SHORT).show();
                     finish(); // Volta pra tela anterior
                 })
                 .addOnFailureListener(e -> {
@@ -104,7 +110,12 @@ public class AddNote extends AppCompatActivity {
                 });
     }
 
-    private void atualizarNota(){
+    private void atualizarTarefa(){
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Toast.makeText(this, "Usuário não autenticado", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         String tarefa = etTarefa.getText().toString().trim();
         String descricao = etDescricao.getText().toString().trim();
@@ -116,20 +127,19 @@ public class AddNote extends AppCompatActivity {
             return;
         }
 
-        Map<String, Object> nota = new HashMap<>();
-        nota.put("tarefa", tarefa);
-        nota.put("descricao", descricao);
-        nota.put("prioridade", prioridade);
-        nota.put("concluida", concluida);
+        Map<String, Object> task = new HashMap<>();
+        task.put("tarefa", tarefa);
+        task.put("descricao", descricao);
+        task.put("prioridade", prioridade);
+        task.put("concluida", concluida);
 
-        db.collection("notes").document(noteId)
-                .set(nota)
+        db.collection("users").document(user.getUid()).collection("tasks").add(task)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Nota atualizada com sucesso", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Tarefa atualizada com sucesso", Toast.LENGTH_SHORT).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Erro ao atualizar nota", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Erro ao atualizar tarefa", Toast.LENGTH_SHORT).show();
                 });
     }
 

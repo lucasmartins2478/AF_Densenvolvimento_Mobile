@@ -1,31 +1,32 @@
 package com.example.notation;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Journal extends AppCompatActivity {
 
-    private RecyclerView recyclerView;
-    private JournalAdapter adapter;
-    private List<Note> noteList;
-
+    private EditText editTextNote;
     private FirebaseFirestore db;
+    private FirebaseUser user;
+    private DocumentReference noteRef;
+
+    private boolean isLoading = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,49 +38,57 @@ public class Journal extends AppCompatActivity {
             return insets;
         });
 
-        AppCompatButton btnAdd = findViewById(R.id.add_note);
-        recyclerView = findViewById(R.id.recyclerViewNotes);
-
-        noteList = new ArrayList<>();
-        adapter = new JournalAdapter(noteList);
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
-
+        editTextNote = findViewById(R.id.editTextNote);
         db = FirebaseFirestore.getInstance();
+        user = FirebaseAuth.getInstance().getCurrentUser();
 
-        loadNotes();
+        if (user == null) {
+            Toast.makeText(this, "Usuário não está logado!", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
-        btnAdd.setOnClickListener(v -> {
-            startActivity(new Intent(Journal.this, AddNote.class));
+        noteRef = db.collection("users").document(user.getUid()).collection("notas").document("bloco");
+
+        carregarNota();
+
+        editTextNote.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!isLoading) {
+                    salvarNota(s.toString());
+                }
+            }
         });
     }
 
-    private void loadNotes() {
-        db.collection("notes")
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    noteList.clear();
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                        Log.d("FIREBASE_RAW", doc.getData().toString()); // mostra os dados do Firebase
-                        Note note = doc.toObject(Note.class);
-                        note.setId(doc.getId()); // Aqui você pega o ID do documento
-                        Log.d("FIREBASE_NOTE", "Tarefa: " + note.getTarefa() + ", Prioridade: " + note.getPrioridade());
-                        noteList.add(note);
+    private void carregarNota() {
+        noteRef.get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String texto = documentSnapshot.getString("texto");
+                        isLoading = true;
+                        editTextNote.setText(texto);
+                        isLoading = false;
+                    } else {
+                        Log.d("FIRESTORE", "Nota ainda não criada.");
+                        isLoading = false;
                     }
-                    Log.d("FIREBASE_LIST", "Total de notas carregadas: " + noteList.size());
-                    adapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("FIREBASE_ERROR", "Erro ao buscar notas", e);
+                    Toast.makeText(this, "Erro ao carregar nota", Toast.LENGTH_SHORT).show();
+                    isLoading = false;
                 });
     }
 
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        loadNotes(); // Atualiza a lista toda vez que volta pra tela principal
+    private void salvarNota(String texto) {
+        noteRef.set(new Note(texto))
+                .addOnFailureListener(e -> Log.e("FIRESTORE", "Erro ao salvar nota", e));
     }
 
+
 }
+
