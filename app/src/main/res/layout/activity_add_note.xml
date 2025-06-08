@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/main"
-    android:background="@color/background"
+    android:background="?attr/colorBackground"
     android:padding="16dp">
 
     <LinearLayout
@@ -16,7 +16,7 @@
         <EditText
             android:id="@+id/etTarefa"
             android:layout_width="match_parent"
-            android:textColor="@color/white"
+            android:textColor="?attr/colorOnBackground"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:hint="Título da Tarefa" />
@@ -28,7 +28,7 @@
             android:hint="Descrição"
             android:layout_marginBottom="10dp"
 
-            android:textColor="@color/white"
+            android:textColor="?attr/colorOnBackground"
             android:layout_marginTop="8dp" />
 
         <Spinner
@@ -42,7 +42,7 @@
         <CheckBox
             android:id="@+id/cbConcluida"
             android:layout_width="wrap_content"
-            android:textColor="@color/white"
+            android:textColor="?attr/colorOnBackground"
             android:layout_height="wrap_content"
             android:text="Concluída"
             android:layout_marginBottom="10dp"
@@ -55,8 +55,8 @@
             android:layout_height="wrap_content"
             android:textAllCaps="false"
             android:text="Salvar"
-            android:textColor="@color/white"
-            android:background="@color/btn_background"
+            android:textColor="?attr/colorOnBackground"
+            android:background="?attr/colorPrimary"
             android:layout_marginTop="16dp" />
 
     </LinearLayout>

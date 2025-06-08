@@ -2,93 +2,109 @@ package com.example.notation;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.Context;
+import android.app.TimePickerDialog;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TimePicker;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.os.Build;
+
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
+import com.example.notation.databinding.ActivityAlarmBinding;
+import com.google.android.material.timepicker.MaterialTimePicker;
+import com.google.android.material.timepicker.TimeFormat;
+
+import java.text.DateFormatSymbols;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 public class Alarm extends AppCompatActivity {
 
-    private TimePicker timePicker;
-    private Button setAlarmButton;
+    private TextView tvSelectedTime;
+    private int selectedHour = -1, selectedMinute = -1;
+    private final Map<Integer, CheckBox> dayCheckboxes = new HashMap<>();
+    private final int[] daysOfWeek = {
+            Calendar.SUNDAY, Calendar.MONDAY, Calendar.TUESDAY,
+            Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_alarm);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
-        timePicker = findViewById(R.id.timePicker);
-        setAlarmButton = findViewById(R.id.setAlarmButton);
-
-        setAlarmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setAlarm();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (!alarmManager.canScheduleExactAlarms()) {
+                Intent intent = new Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                startActivity(intent); // Isso abre as configurações para o usuário permitir
             }
+        }
+
+        setContentView(R.layout.activity_alarm);
+        tvSelectedTime = findViewById(R.id.tvSelectedTime);
+        LinearLayout daysContainer = findViewById(R.id.daysContainer);
+
+        for (int day : daysOfWeek) {
+            CheckBox cb = new CheckBox(this);
+            cb.setText(getDayName(day));
+            daysContainer.addView(cb);
+            dayCheckboxes.put(day, cb);
+        }
+
+        findViewById(R.id.btnSelectTime).setOnClickListener(v -> showTimePicker());
+        findViewById(R.id.btnSetAlarm).setOnClickListener(v -> setAlarm());
+        findViewById(R.id.btnCancelAlarm).setOnClickListener(v -> AlarmUtils.cancelAllAlarms(this));
+    }
+
+    private void showTimePicker() {
+        MaterialTimePicker picker = new MaterialTimePicker.Builder()
+                .setTimeFormat(TimeFormat.CLOCK_24H)
+                .setHour(Calendar.getInstance().get(Calendar.HOUR_OF_DAY))
+                .setMinute(Calendar.getInstance().get(Calendar.MINUTE))
+                .setTitleText("Select Alarm Time")
+                .setPositiveButtonText("OK")
+                .setTheme(R.style.ThemeOverlay_Notation_TimePicker)
+                .build();
+
+
+
+        picker.show(getSupportFragmentManager(), "time_picker");
+
+
+        picker.addOnPositiveButtonClickListener(view -> {
+            selectedHour = picker.getHour();
+            selectedMinute = picker.getMinute();
+            tvSelectedTime.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute));
         });
     }
+
 
     private void setAlarm() {
-        Calendar calendar = Calendar.getInstance();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            calendar.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
-            calendar.set(Calendar.MINUTE, timePicker.getMinute());
-        } else {
-            calendar.set(Calendar.HOUR_OF_DAY, timePicker.getCurrentHour());
-            calendar.set(Calendar.MINUTE, timePicker.getCurrentMinute());
-        }
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-
-        if (calendar.getTimeInMillis() <= System.currentTimeMillis()) {
-            calendar.add(Calendar.DAY_OF_YEAR, 1); // Adiciona um dia se a hora já passou
+        if (selectedHour == -1 || selectedMinute == -1) {
+            Toast.makeText(this, "Select a time", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(this, AlarmReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
-        // Agendar o alarme principal
-        if (alarmManager != null) {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
-            Toast.makeText(this, "Alarme definido para " + formatDate(calendar), Toast.LENGTH_LONG).show();
+        for (int day : daysOfWeek) {
+            if (dayCheckboxes.get(day).isChecked()) {
+                AlarmUtils.setWeeklyAlarm(this, selectedHour, selectedMinute, day);
+            }
         }
 
-        // Agendar a notificação 20 minutos antes
-        Calendar notificationCalendar = (Calendar) calendar.clone();
-        notificationCalendar.add(Calendar.MINUTE, -20);
-
-        Intent notificationIntent = new Intent(this, AlarmReceiver.class);
-        notificationIntent.putExtra("notification", true); // Indica que é uma notificação antecipada
-        PendingIntent notificationPendingIntent = PendingIntent.getBroadcast(this, 1, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE); // ID diferente para o PendingIntent
-
-        if (alarmManager != null) {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, notificationCalendar.getTimeInMillis(), notificationPendingIntent);
-        }
+        Toast.makeText(this, "Alarm set", Toast.LENGTH_SHORT).show();
     }
 
-    private String formatDate(Calendar calendar) {
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-        return String.format("%02d:%02d", hour, minute);
+    private String getDayName(int day) {
+        return new DateFormatSymbols().getWeekdays()[day];
     }
 }

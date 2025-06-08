@@ -12,13 +12,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:background="@color/btn_background"
+        android:background="?attr/colorPrimary"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/tvTarefa"
             android:layout_width="match_parent"
-            android:textColor="@color/white"
+            android:textColor="?attr/colorOnBackground"
             android:layout_height="wrap_content"
             android:text="Título da Tarefa"
             android:textSize="18sp"
@@ -28,7 +28,7 @@
             android:id="@+id/tvDescricao"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
+            android:textColor="?attr/colorOnBackground"
             android:text="Descrição da tarefa"
             android:textSize="14sp"
             android:layout_marginTop="4dp"/>
@@ -37,7 +37,7 @@
             android:id="@+id/tvPrioridade"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/white"
+            android:textColor="?attr/colorOnBackground"
             android:text="Prioridade: Alta"
             android:textSize="14sp"
             android:layout_marginTop="4dp" />
@@ -45,7 +45,7 @@
         <TextView
             android:id="@+id/tvConcluida"
             android:layout_width="match_parent"
-            android:textColor="@color/white"
+            android:textColor="?attr/colorOnBackground"
             android:layout_height="wrap_content"
             android:text="Status: Concluída"
             android:textSize="14sp"

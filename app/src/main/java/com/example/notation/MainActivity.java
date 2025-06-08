@@ -1,15 +1,19 @@
 package com.example.notation;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,6 +29,13 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        SharedPreferences prefs = getSharedPreferences("SettingsPrefs", MODE_PRIVATE);
+        boolean darkMode = prefs.getBoolean("dark_mode", false);
+        AppCompatDelegate.setDefaultNightMode(
+                darkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
+        );
+
 
         btnAlarm = findViewById(R.id.btnAlarm);
         btnTasks = findViewById(R.id.btnTasks);
@@ -44,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
     public void openCalendar(View v){
-        Intent intent = new Intent(MainActivity.this, Calendar.class);
+        Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
         startActivity(intent);
 
     }

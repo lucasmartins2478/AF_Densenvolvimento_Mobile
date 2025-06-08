@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,6 +14,8 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -40,6 +41,26 @@ public class Profile extends AppCompatActivity {
         TextView profileEmail = findViewById(R.id.profileEmail);
         profileEmail.setText(email);
         profileName.setText(name);
+        AppCompatButton btnTaskCount = findViewById(R.id.btnTaskCount);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(user.getUid())
+                    .collection("tasks")
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        int count = queryDocumentSnapshots.size();
+                        btnTaskCount.setText("Tarefas: " + count);
+                    })
+                    .addOnFailureListener(e -> {
+                        btnTaskCount.setText("Tarefas: erro");
+                    });
+        }
+        btnTaskCount.setOnClickListener(v -> {
+            startActivity(new Intent(Profile.this, Tasks.class));
+        });
 
         AppCompatButton btnDelete = findViewById(R.id.btnDeleteAccount);
         btnDelete.setOnClickListener(v -> confirmarExclusao());
@@ -50,6 +71,8 @@ public class Profile extends AppCompatActivity {
     public void logout(View v){
         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("name", "");
+        editor.putString("email", "");
         editor.putBoolean("isLogged", false);
         editor.commit();
         Intent intent = new Intent(Profile.this, Login.class);

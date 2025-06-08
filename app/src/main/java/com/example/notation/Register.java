@@ -15,6 +15,10 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Register extends AppCompatActivity {
 
@@ -48,20 +52,43 @@ public class Register extends AppCompatActivity {
             mAuth.createUserWithEmailAndPassword(edtEmail.getText().toString(), edtSenha.getText().toString())
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
+                            String name = edtName.getText().toString();
+                            String email = edtEmail.getText().toString();
+
                             SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
                             SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putString("name", edtName.getText().toString());
-                            editor.putString("email", edtEmail.getText().toString());
+                            editor.putString("name", name);
+                            editor.putString("email", email);
                             editor.putBoolean("isLogged", true);
                             editor.commit();
-                            Toast.makeText(this, "Usuário criado com sucesso", Toast.LENGTH_LONG).show();
-                            Log.d("FIREBASE", "Usuário criado com sucesso");
-                            Intent intent = new Intent(Register.this, MainActivity.class);
-                            startActivity(intent);
+
+                            // Salva no Firestore
+                            String uid = mAuth.getCurrentUser().getUid();
+                            Map<String, Object> userData = new HashMap<>();
+                            userData.put("name", name);
+                            userData.put("email", email);
+
+                            FirebaseFirestore db = FirebaseFirestore.getInstance();
+                            db.collection("users")
+                                    .document(uid)
+                                    .set(userData)
+                                    .addOnSuccessListener(aVoid -> {
+                                        Toast.makeText(this, "Usuário criado com sucesso", Toast.LENGTH_LONG).show();
+                                        Log.d("FIREBASE", "Usuário criado e dados salvos");
+
+                                        // Vai pra tela principal
+                                        Intent intent = new Intent(Register.this, MainActivity.class);
+                                        startActivity(intent);
+                                        finish(); // Fecha a tela de cadastro
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(this, "Erro ao salvar dados: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    });
                         } else {
                             Toast.makeText(this, "Erro ao criar usuário: " + task.getException(), Toast.LENGTH_LONG).show();
                             Log.e("FIREBASE", "Erro ao criar usuário", task.getException());
                         }
+
                     });
         }
     }

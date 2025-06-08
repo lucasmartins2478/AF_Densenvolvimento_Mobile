@@ -10,11 +10,13 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class Login extends AppCompatActivity {
 
@@ -31,6 +33,11 @@ public class Login extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        SharedPreferences prefs = getSharedPreferences("SettingsPrefs", MODE_PRIVATE);
+        boolean darkMode = prefs.getBoolean("dark_mode", false);
+        AppCompatDelegate.setDefaultNightMode(
+                darkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
+        );
 
         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         boolean isLogged = sharedPreferences.getBoolean("isLogged", false);
@@ -45,31 +52,48 @@ public class Login extends AppCompatActivity {
 
 
     public void login(View v) {
-
-
-
         EditText edtEmail = findViewById(R.id.emailInput);
         EditText edtSenha = findViewById(R.id.passwordInput);
+
         mAuth.signInWithEmailAndPassword(edtEmail.getText().toString(), edtSenha.getText().toString())
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        String uid = mAuth.getCurrentUser().getUid();
 
-                        editor.putBoolean("isLogged", true);
-                        editor.commit();
+                        FirebaseFirestore db = FirebaseFirestore.getInstance();
+                        db.collection("users").document(uid).get()
+                                .addOnSuccessListener(documentSnapshot -> {
+                                    if (documentSnapshot.exists()) {
+                                        String name = documentSnapshot.getString("name");
 
-                        Toast.makeText(this, "Login bem-sucedido", Toast.LENGTH_LONG).show();
-                        Log.d("FIREBASE", "Login bem-sucedido");
-                        Intent intent = new Intent(Login.this, MainActivity.class);
-                        startActivity(intent);
+                                        SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                                        editor.putString("name", name);  // <-- Salva o nome
+                                        editor.putString("email", edtEmail.getText().toString());
+                                        editor.putBoolean("isLogged", true);
+                                        editor.commit();
+
+                                        Toast.makeText(this, "Login bem-sucedido", Toast.LENGTH_LONG).show();
+                                        Log.d("FIREBASE", "Login bem-sucedido");
+
+                                        Intent intent = new Intent(Login.this, MainActivity.class);
+                                        startActivity(intent);
+                                        finish(); // opcional
+                                    } else {
+                                        Toast.makeText(this, "Dados do usuário não encontrados", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(this, "Erro ao buscar nome do usuário", Toast.LENGTH_SHORT).show();
+                                    Log.e("FIREBASE", "Erro ao buscar nome", e);
+                                });
                     } else {
                         Toast.makeText(this, "Erro no login: " + task.getException(), Toast.LENGTH_LONG).show();
                         Log.e("FIREBASE", "Erro no login", task.getException());
                     }
                 });
-
     }
+
 
     public void goToRegister(View v){
         Intent intent = new Intent(Login.this, Register.class);

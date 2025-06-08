@@ -26,6 +26,9 @@ android {
             )
         }
     }
+    buildFeatures{
+        viewBinding = true
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -34,6 +37,7 @@ android {
 
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.14.0"))
+    implementation(libs.androidx.core)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
