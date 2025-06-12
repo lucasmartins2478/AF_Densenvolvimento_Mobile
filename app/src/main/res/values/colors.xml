@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="backgroundColor">#FFFFFF</color>
-    <color name="buttonColor">#E0E0E0</color>
-    <color name="textColor">#000000</color>
+    <color name="colorPrimary">#E0E0E0</color>
+    <color name="colorOnPrimary">#000000</color>
+
+    <color name="colorBackground">#FFFFFF</color>
+    <color name="colorOnBackground">#000000</color>
+
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorOnSurface">#000000</color>
 </resources>

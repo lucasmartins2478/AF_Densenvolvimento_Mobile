@@ -17,11 +17,12 @@ import java.util.Map;
 public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.ReminderViewHolder> {
 
     private List<Map.Entry<Long, String>> reminderList;
+    private OnReminderLongClickListener longClickListener;
+    private OnReminderClickListener clickListener;
 
-    public ReminderAdapter(List<Map.Entry<Long, String>> reminderList) {
-        this.reminderList = reminderList;
+    public interface OnReminderLongClickListener {
+        void onReminderLongClick(long dateInMillis, String text, int position);
     }
-
     @NonNull
     @Override
     public ReminderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -30,18 +31,43 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
         return new ReminderViewHolder(view);
     }
 
+    public interface OnReminderClickListener {
+        void onReminderClick(long dateInMillis, String text, int position);
+    }
+
+    public ReminderAdapter(List<Map.Entry<Long, String>> reminderList,
+                           OnReminderClickListener clickListener,
+                           OnReminderLongClickListener longClickListener) {
+        this.reminderList = reminderList;
+        this.clickListener = clickListener;
+        this.longClickListener = longClickListener;
+    }
+
     @Override
     public void onBindViewHolder(@NonNull ReminderViewHolder holder, int position) {
         Map.Entry<Long, String> reminder = reminderList.get(position);
-
-        // Formata a data
         Date date = new Date(reminder.getKey());
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         String dateStr = sdf.format(date);
 
         holder.text1.setText(dateStr);
         holder.text2.setText(reminder.getValue());
+
+        holder.itemView.setOnClickListener(v -> {
+            if (clickListener != null) {
+                clickListener.onReminderClick(reminder.getKey(), reminder.getValue(), position);
+            }
+        });
+
+        holder.itemView.setOnLongClickListener(v -> {
+            if (longClickListener != null) {
+                longClickListener.onReminderLongClick(reminder.getKey(), reminder.getValue(), position);
+                return true;
+            }
+            return false;
+        });
     }
+
 
     @Override
     public int getItemCount() {
@@ -59,4 +85,5 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
         }
     }
 }
+
 

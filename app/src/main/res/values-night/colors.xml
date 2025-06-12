@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="backgroundColor">#1C1C1C</color>
-    <color name="buttonColor">#2C2C2C</color>
-    <color name="textColor">#FFFFFF</color>
+    <color name="colorPrimary">#2C2C2C</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+
+    <color name="colorBackground">#1C1C1C</color>
+    <color name="colorOnBackground">#FFFFFF</color>
+
+    <color name="colorSurface">#1C1C1C</color>
+    <color name="colorOnSurface">#FFFFFF</color>
 </resources>
+

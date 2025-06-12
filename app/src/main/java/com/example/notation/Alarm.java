@@ -1,9 +1,11 @@
 package com.example.notation;
 
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.app.NotificationChannel;
@@ -11,16 +13,25 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
 
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.notation.databinding.ActivityAlarmBinding;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
@@ -41,7 +52,7 @@ public class Alarm extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        EdgeToEdge.enable(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
             if (!alarmManager.canScheduleExactAlarms()) {
@@ -60,51 +71,141 @@ public class Alarm extends AppCompatActivity {
             daysContainer.addView(cb);
             dayCheckboxes.put(day, cb);
         }
+        carregarAlarmesSalvos();
 
-        findViewById(R.id.btnSelectTime).setOnClickListener(v -> showTimePicker());
+        findViewById(R.id.btnSelectTime).setOnClickListener(v -> showCustomTimePickerDialog());
         findViewById(R.id.btnSetAlarm).setOnClickListener(v -> setAlarm());
         findViewById(R.id.btnCancelAlarm).setOnClickListener(v -> AlarmUtils.cancelAllAlarms(this));
     }
 
-    private void showTimePicker() {
-        MaterialTimePicker picker = new MaterialTimePicker.Builder()
-                .setTimeFormat(TimeFormat.CLOCK_24H)
-                .setHour(Calendar.getInstance().get(Calendar.HOUR_OF_DAY))
-                .setMinute(Calendar.getInstance().get(Calendar.MINUTE))
-                .setTitleText("Select Alarm Time")
-                .setPositiveButtonText("OK")
-                .setTheme(R.style.ThemeOverlay_Notation_TimePicker)
-                .build();
+    private void showCustomTimePickerDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_time_picker, null);
 
+        TimePicker timePicker = dialogView.findViewById(R.id.timePicker);
+        timePicker.setIs24HourView(true);
 
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
 
-        picker.show(getSupportFragmentManager(), "time_picker");
+        Button btnOk = dialogView.findViewById(R.id.btnOk);
+        Button btnCancel = dialogView.findViewById(R.id.btnCancel);
 
+        btnOk.setOnClickListener(v -> {
+            int hour = timePicker.getHour();
+            int minute = timePicker.getMinute();
+            // Aqui você pode salvar o horário selecionado e atualizar a UI
+            selectedHour = hour;
+            selectedMinute = minute;
+            tvSelectedTime.setText(String.format(Locale.getDefault(), "%02d:%02d", hour, minute));
 
-        picker.addOnPositiveButtonClickListener(view -> {
-            selectedHour = picker.getHour();
-            selectedMinute = picker.getMinute();
-            tvSelectedTime.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute));
+            dialog.dismiss();
         });
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
+
 
 
     private void setAlarm() {
         if (selectedHour == -1 || selectedMinute == -1) {
-            Toast.makeText(this, "Select a time", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Selecione um horário", Toast.LENGTH_SHORT).show();
             return;
         }
 
         for (int day : daysOfWeek) {
             if (dayCheckboxes.get(day).isChecked()) {
+
+
                 AlarmUtils.setWeeklyAlarm(this, selectedHour, selectedMinute, day);
             }
         }
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        Toast.makeText(this, "Alarm set", Toast.LENGTH_SHORT).show();
+            for (int day : daysOfWeek) {
+                if (dayCheckboxes.get(day).isChecked()) {
+                    Map<String, Object> alarm = new HashMap<>();
+                    alarm.put("hour", selectedHour);
+                    alarm.put("minute", selectedMinute);
+                    alarm.put("day", day);
+
+                    db.collection("users")
+                            .document(user.getUid())
+                            .collection("alarms")
+                            .add(alarm);
+                }
+            }
+        }
+        saveAlarmLocally();
+
+        Toast.makeText(this, "Alarm definido", Toast.LENGTH_SHORT).show();
     }
+
+    private void carregarAlarmesSalvos() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users")
+                .document(user.getUid())
+                .collection("alarms")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (var doc : queryDocumentSnapshots) {
+                        Long hour = doc.getLong("hour");
+                        Long minute = doc.getLong("minute");
+                        Long day = doc.getLong("day");
+
+                        if (hour != null && minute != null && day != null) {
+                            // Marca o checkbox do dia
+                            CheckBox cb = dayCheckboxes.get(day.intValue());
+                            if (cb != null) cb.setChecked(true);
+
+                            // Atualiza hora selecionada (pode mostrar o último alarme criado)
+                            selectedHour = hour.intValue();
+                            selectedMinute = minute.intValue();
+                            tvSelectedTime.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute));
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Erro ao carregar alarmes salvos", Toast.LENGTH_SHORT).show();
+                });
+    }
+
 
     private String getDayName(int day) {
         return new DateFormatSymbols().getWeekdays()[day];
     }
+
+
+    private void saveAlarmLocally() {
+        try {
+            SharedPreferences prefs = getSharedPreferences("alarms", MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+
+            JSONArray alarmArray = new JSONArray();
+
+            for (int day : daysOfWeek) {
+                if (dayCheckboxes.get(day).isChecked()) {
+                    JSONObject alarmJson = new JSONObject();
+                    alarmJson.put("hour", selectedHour);
+                    alarmJson.put("minute", selectedMinute);
+                    alarmJson.put("day", day);
+                    alarmArray.put(alarmJson);
+                }
+            }
+
+            editor.putString("saved_alarms", alarmArray.toString());
+            editor.apply();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

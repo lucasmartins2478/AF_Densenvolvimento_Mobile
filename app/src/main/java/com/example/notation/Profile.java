@@ -71,13 +71,19 @@ public class Profile extends AppCompatActivity {
     public void logout(View v){
         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("name", "");
-        editor.putString("email", "");
-        editor.putBoolean("isLogged", false);
-        editor.commit();
+        editor.clear().apply();
+
+        SharedPreferences alarmPrefs = getSharedPreferences("alarms", MODE_PRIVATE);
+        SharedPreferences.Editor alarmEditor = alarmPrefs.edit();
+        alarmEditor.clear().apply();
+
+        AlarmUtils.cancelAllAlarms(this);
+
         Intent intent = new Intent(Profile.this, Login.class);
         startActivity(intent);
+        finish();
     }
+
 
     private void confirmarExclusao() {
         new AlertDialog.Builder(this)

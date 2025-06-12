@@ -1,14 +1,20 @@
 package com.example.notation;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
 
@@ -50,32 +56,47 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
         // Long click para excluir
         holder.itemView.setOnLongClickListener(v -> {
-            new androidx.appcompat.app.AlertDialog.Builder(context)
+            AlertDialog dialog = new AlertDialog.Builder(
+                    new ContextThemeWrapper(context, com.google.android.material.R.style.Theme_Material3_DayNight_Dialog_Alert))
                     .setTitle("Excluir tarefa")
                     .setMessage("Tem certeza que deseja apagar essa tarefa?")
-                    .setPositiveButton("Sim", (dialog, which) -> {
-                        excluirTarefa(task.getId(), context, position);
-                    })
+                    .setPositiveButton("Sim", (d, w) -> excluirTarefa(task.getId(), context, position))
                     .setNegativeButton("Cancelar", null)
-                    .show();
+                    .create();
+
+            dialog.setOnShowListener(d -> {
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setAllCaps(false);
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setAllCaps(false);
+            });
+
+            dialog.show();
+
+
             return true;
         });
+
     }
 
     private void excluirTarefa(String id, Context context, int position) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
+
         com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(user.getUid())
                 .collection("tasks")
                 .document(id)
                 .delete()
                 .addOnSuccessListener(aVoid -> {
-                    tasks.remove(position); // remove da lista local
-                    notifyItemRemoved(position); // atualiza a RecyclerView
-                    android.widget.Toast.makeText(context, "Tarefa excluída com sucesso", android.widget.Toast.LENGTH_SHORT).show();
+                    tasks.remove(position);
+                    notifyItemRemoved(position);
+                    Toast.makeText(context, "Tarefa excluída com sucesso", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {
-                    android.widget.Toast.makeText(context, "Erro ao excluir", android.widget.Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Erro ao excluir", Toast.LENGTH_SHORT).show();
                 });
     }
+
 
 
     @Override

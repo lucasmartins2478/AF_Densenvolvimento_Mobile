@@ -5,7 +5,11 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.Calendar;
 
@@ -45,6 +49,26 @@ public class AlarmUtils {
             alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
         } else {
             alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+        }
+    }
+    public static void reagendarTodosAlarmes(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences("alarms", Context.MODE_PRIVATE);
+        String savedAlarms = prefs.getString("saved_alarms", null);
+
+        if (savedAlarms == null) return;
+
+        try {
+            JSONArray alarmArray = new JSONArray(savedAlarms);
+            for (int i = 0; i < alarmArray.length(); i++) {
+                JSONObject alarmJson = alarmArray.getJSONObject(i);
+                int hour = alarmJson.getInt("hour");
+                int minute = alarmJson.getInt("minute");
+                int day = alarmJson.getInt("day");
+
+                setWeeklyAlarm(context, hour, minute, day);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

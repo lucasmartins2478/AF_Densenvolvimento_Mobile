@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="ThemeOverlay_Notation_TimePicker" parent="ThemeOverlay.Material3.MaterialTimePicker">
-        <item name="colorPrimary">@color/buttonColor</item>
-        <item name="colorOnPrimary">@color/textColor</item>
-        <item name="android:textColor">@color/textColor</item>
-        <item name="colorSurface">@color/backgroundColor</item>
-        <item name="colorOnSurface">@color/textColor</item>
-        <item name="colorOnSurfaceVariant">@color/textColor</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorOnPrimary">@color/colorOnPrimary</item>
+        <item name="colorSurface">@color/colorSurface</item>
+        <item name="colorOnSurface">@color/colorOnSurface</item>
+        <item name="android:textColor">@color/colorOnSurface</item>
     </style>
-
-
-
-</resources>    
+</resources>

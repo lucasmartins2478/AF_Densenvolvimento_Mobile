@@ -75,6 +75,37 @@ public class Login extends AppCompatActivity {
 
                                         Toast.makeText(this, "Login bem-sucedido", Toast.LENGTH_LONG).show();
                                         Log.d("FIREBASE", "Login bem-sucedido");
+                                        db.collection("users")
+                                                .document(uid)
+                                                .collection("alarms")
+                                                .get()
+                                                .addOnSuccessListener(querySnapshot -> {
+                                                    SharedPreferences alarmPrefs = getSharedPreferences("alarms", MODE_PRIVATE);
+                                                    SharedPreferences.Editor alarmEditor = alarmPrefs.edit();
+                                                    StringBuilder alarmsJson = new StringBuilder("[");
+
+                                                    for (int i = 0; i < querySnapshot.size(); i++) {
+                                                        var doc = querySnapshot.getDocuments().get(i);
+                                                        long hour = doc.getLong("hour");
+                                                        long minute = doc.getLong("minute");
+                                                        long day = doc.getLong("day");
+
+                                                        // Reagenda o alarme
+                                                        AlarmUtils.setWeeklyAlarm(this, (int) hour, (int) minute, (int) day);
+
+                                                        alarmsJson.append(String.format("{\"hour\":%d,\"minute\":%d,\"day\":%d}", hour, minute, day));
+                                                        if (i < querySnapshot.size() - 1) alarmsJson.append(",");
+                                                    }
+
+                                                    alarmsJson.append("]");
+                                                    alarmEditor.putString("saved_alarms", alarmsJson.toString());
+                                                    alarmEditor.apply();
+
+                                                    Log.d("ALARMS", "Alarmes restaurados do Firestore");
+                                                })
+                                                .addOnFailureListener(e -> {
+                                                    Log.e("ALARMS", "Erro ao restaurar alarmes", e);
+                                                });
 
                                         Intent intent = new Intent(Login.this, MainActivity.class);
                                         startActivity(intent);
