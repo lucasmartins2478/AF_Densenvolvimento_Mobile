@@ -36,6 +36,8 @@ public class Register extends AppCompatActivity {
         });
     }
 
+    // Função que cadastra o usuário no firebase
+
     public void registerUser(View v) {
         EditText edtName = findViewById(R.id.nameInput);
         EditText edtEmail = findViewById(R.id.emailInput);
@@ -43,7 +45,7 @@ public class Register extends AppCompatActivity {
         EditText edtConfirmPassword = findViewById(R.id.confirmPasswordInput);
         if (edtSenha.getText().toString().length() < 6) {
             Toast.makeText(this, "A senha deve ter pelo menos 6 caracteres", Toast.LENGTH_SHORT).show();
-            return; // Interrompe a execução da função
+            return;
         }
 
         if(!edtConfirmPassword.getText().toString().equals(edtSenha.getText().toString())){
@@ -76,10 +78,10 @@ public class Register extends AppCompatActivity {
                                         Toast.makeText(this, "Usuário criado com sucesso", Toast.LENGTH_LONG).show();
                                         Log.d("FIREBASE", "Usuário criado e dados salvos");
 
-                                        // Vai pra tela principal
+
                                         Intent intent = new Intent(Register.this, MainActivity.class);
                                         startActivity(intent);
-                                        finish(); // Fecha a tela de cadastro
+                                        finish();
                                     })
                                     .addOnFailureListener(e -> {
                                         Toast.makeText(this, "Erro ao salvar dados: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -93,6 +95,8 @@ public class Register extends AppCompatActivity {
         }
     }
 
+
+    // Função para voltar para a tela de login caso já tenha uma conta
 
     public void goToLogin(View v){
         Intent intent  = new Intent(Register.this, Login.class);

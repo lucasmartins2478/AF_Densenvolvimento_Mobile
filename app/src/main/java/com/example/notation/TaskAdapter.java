@@ -43,7 +43,10 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
         Context context = holder.itemView.getContext();
 
-        // Clique normal para editar
+        // Define que o clique curto vai abrir a tela de adicionar
+        // tarefa mas enviando a tarefa clicada na intent
+        // para que o app entenda que vai ser uma atualização
+
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, AddTask.class);
             intent.putExtra("id", task.getId());
@@ -54,7 +57,9 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             context.startActivity(intent);
         });
 
-        // Long click para excluir
+        // Define que quando o card de tarefa tiver um clique
+        // longo, vai abrir o Menu de exluir tarefa
+
         holder.itemView.setOnLongClickListener(v -> {
             AlertDialog dialog = new AlertDialog.Builder(
                     new ContextThemeWrapper(context, com.google.android.material.R.style.Theme_Material3_DayNight_Dialog_Alert))
@@ -76,6 +81,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         });
 
     }
+
+    // Função de remover a tarefa do firebase
 
     private void excluirTarefa(String id, Context context, int position) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();

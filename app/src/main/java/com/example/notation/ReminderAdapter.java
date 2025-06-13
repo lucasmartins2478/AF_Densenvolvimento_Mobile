@@ -53,11 +53,17 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
         holder.text1.setText(dateStr);
         holder.text2.setText(reminder.getValue());
 
+        // Define que quando o lembrete tiver um clique curto
+        // ele abre o Menu de definir lembrete para ser atualizado
+
         holder.itemView.setOnClickListener(v -> {
             if (clickListener != null) {
                 clickListener.onReminderClick(reminder.getKey(), reminder.getValue(), position);
             }
         });
+
+        // Define que quando o lembrete tiver um longo
+        // clique vai abrir o Menu de excluir lembrete
 
         holder.itemView.setOnLongClickListener(v -> {
             if (longClickListener != null) {

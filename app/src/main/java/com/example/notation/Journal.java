@@ -42,6 +42,8 @@ public class Journal extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         user = FirebaseAuth.getInstance().getCurrentUser();
 
+        // Retorna se o usuário tentar acessar sem estar logado
+
         if (user == null) {
             Toast.makeText(this, "Usuário não está logado!", Toast.LENGTH_SHORT).show();
             finish();
@@ -50,7 +52,11 @@ public class Journal extends AppCompatActivity {
 
         noteRef = db.collection("users").document(user.getUid()).collection("notas").document("bloco");
 
+        // Chama a função que carrega as anotações salvas
+
         carregarNota();
+
+        // Dispara a função de salvar a nota após ela sofrer uma alteração
 
         editTextNote.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
@@ -64,6 +70,8 @@ public class Journal extends AppCompatActivity {
             }
         });
     }
+
+    // Pega as notas salvas no firebase e coloca no campo de texto
 
     private void carregarNota() {
         noteRef.get()
@@ -83,6 +91,8 @@ public class Journal extends AppCompatActivity {
                     isLoading = false;
                 });
     }
+
+    // Salva a nota no firebase
 
     private void salvarNota(String texto) {
         noteRef.set(new Note(texto))

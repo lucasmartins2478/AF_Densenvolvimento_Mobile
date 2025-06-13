@@ -63,6 +63,8 @@ public class Tasks extends AppCompatActivity {
         });
     }
 
+    // carrega as tarefas do firebase conforme o usuário que estiver logado
+
     private void loadTasks() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
@@ -91,6 +93,6 @@ public class Tasks extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        loadTasks(); // Atualiza a lista toda vez que volta pra tela principal
+        loadTasks();
     }
 }

@@ -18,7 +18,6 @@ public class Configuration extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Aplica o tema salvo antes de carregar a tela
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         boolean darkMode = prefs.getBoolean(KEY_DARK_MODE, false);
         AppCompatDelegate.setDefaultNightMode(darkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
@@ -31,6 +30,10 @@ public class Configuration extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        // Busca qual o tema que foi salvo em sharedPreferences
+        // e define de o bottão toggle vai estar ativo ou não
+        // e faz a mudança no tema quando alterado
 
         SwitchCompat switchTheme = findViewById(R.id.switchTheme);
         switchTheme.setChecked(darkMode);

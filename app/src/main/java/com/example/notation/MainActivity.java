@@ -46,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    // Navegação entre as telas
+
     public void openProfile(View v){
         Intent intent = new Intent(MainActivity.this, Profile.class);
         startActivity(intent);

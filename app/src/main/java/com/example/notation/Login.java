@@ -45,11 +45,14 @@ public class Login extends AppCompatActivity {
         if(isLogged){
             Intent intent = new Intent(Login.this, MainActivity.class);
             startActivity(intent);
-            finish(); // finaliza tela de login
+            finish();
         }
     }
 
 
+    // verifica os dados do usuário no firebase e retorna
+    // não só os dados principais como nome e email, mas
+    // também já redefine os alarmes que ele possui cadastrado
 
     public void login(View v) {
         EditText edtEmail = findViewById(R.id.emailInput);
@@ -68,7 +71,7 @@ public class Login extends AppCompatActivity {
 
                                         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
                                         SharedPreferences.Editor editor = sharedPreferences.edit();
-                                        editor.putString("name", name);  // <-- Salva o nome
+                                        editor.putString("name", name);
                                         editor.putString("email", edtEmail.getText().toString());
                                         editor.putBoolean("isLogged", true);
                                         editor.commit();
@@ -90,8 +93,7 @@ public class Login extends AppCompatActivity {
                                                         long minute = doc.getLong("minute");
                                                         long day = doc.getLong("day");
 
-                                                        // Reagenda o alarme
-                                                        AlarmUtils.setWeeklyAlarm(this, (int) hour, (int) minute, (int) day);
+                                                        AlarmUtils.definirAlarme(this, (int) hour, (int) minute, (int) day);
 
                                                         alarmsJson.append(String.format("{\"hour\":%d,\"minute\":%d,\"day\":%d}", hour, minute, day));
                                                         if (i < querySnapshot.size() - 1) alarmsJson.append(",");
@@ -125,6 +127,8 @@ public class Login extends AppCompatActivity {
                 });
     }
 
+
+    // Vai para a tela de cadastro caso não tenha um conta
 
     public void goToRegister(View v){
         Intent intent = new Intent(Login.this, Register.class);

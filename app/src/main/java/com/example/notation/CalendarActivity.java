@@ -91,12 +91,10 @@ public class CalendarActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which) {
                 String reminderText = input.getText().toString().trim();
                 if (!reminderText.isEmpty()) {
-                    // Converte a data do tipo long para string (ex: "yyyy-MM-dd")
                     String dateString = convertMillisToDateString(dateInMillis);
 
                     salvarLembrete(dateString, reminderText);
 
-                    // Atualiza localmente só se quiser (ou espera carregar do Firebase)
                     reminders.put(dateInMillis, reminderText);
                     updateReminderList();
 
@@ -148,7 +146,6 @@ public class CalendarActivity extends AppCompatActivity {
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Busca o documento com date e oldText
         db.collection("users")
                 .document(user.getUid())
                 .collection("reminders")
@@ -204,7 +201,7 @@ public class CalendarActivity extends AppCompatActivity {
         }
 
         Map<String, Object> reminder = new HashMap<>();
-        reminder.put("date", date);  // Pode ser string "yyyy-MM-dd" ou Timestamp
+        reminder.put("date", date);
         reminder.put("text", textoLembrete);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -248,7 +245,7 @@ public class CalendarActivity extends AppCompatActivity {
                                 .addOnFailureListener(e -> {
                                     Toast.makeText(this, "Erro ao excluir lembrete", Toast.LENGTH_SHORT).show();
                                 });
-                        break; // remove só o primeiro que achar (deve ser único)
+                        break;
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -268,7 +265,7 @@ public class CalendarActivity extends AppCompatActivity {
                 .orderBy("date")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    reminders.clear(); // Limpa os lembretes locais antes
+                    reminders.clear();
 
                     for (DocumentSnapshot doc : queryDocumentSnapshots) {
                         String dateString = doc.getString("date");
@@ -290,7 +287,7 @@ public class CalendarActivity extends AppCompatActivity {
         try {
             String[] parts = dateString.split("-");
             int year = Integer.parseInt(parts[0]);
-            int month = Integer.parseInt(parts[1]) - 1; // Janeiro = 0
+            int month = Integer.parseInt(parts[1]) - 1;
             int day = Integer.parseInt(parts[2]);
 
             Calendar cal = Calendar.getInstance();
@@ -307,7 +304,7 @@ public class CalendarActivity extends AppCompatActivity {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(millis);
         int year = cal.get(Calendar.YEAR);
-        int month = cal.get(Calendar.MONTH) + 1;  // Janeiro = 0
+        int month = cal.get(Calendar.MONTH) + 1;
         int day = cal.get(Calendar.DAY_OF_MONTH);
         return String.format("%04d-%02d-%02d", year, month, day);
     }
@@ -319,7 +316,6 @@ public class CalendarActivity extends AppCompatActivity {
     private void updateReminderList() {
         reminderList.clear();
 
-        // Ordena lembretes por data crescente
         List<Map.Entry<Long, String>> sortedEntries = new ArrayList<>(reminders.entrySet());
         Collections.sort(sortedEntries, new Comparator<Map.Entry<Long, String>>() {
             @Override

@@ -1,5 +1,6 @@
 package com.example.notation;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -15,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class NotificationActivity extends AppCompatActivity {
 
     private MediaPlayer mediaPlayer;
-    private static MediaPlayer staticMediaPlayer; // Para parar de AlarmReceiver
+    private static MediaPlayer staticMediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +43,8 @@ public class NotificationActivity extends AppCompatActivity {
         });
     }
 
+    // Tira o som do alarme
+
     private void stopAlarmSound() {
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             mediaPlayer.stop();
@@ -49,15 +52,20 @@ public class NotificationActivity extends AppCompatActivity {
         }
     }
 
+    // Define o alarme para tocar novamente em
+    // 5 minutos depois de apertar o botão soneca
+
+    @SuppressLint("ScheduleExactAlarm")
     private void snoozeAlarm() {
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, AlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 9999, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
-        // Dispara em 5 minutos
         long triggerAt = SystemClock.elapsedRealtime() + 5 * 60 * 1000;
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pendingIntent);
     }
+
+    // Para o alarme após apartar o botão
 
     public static void stopStaticAlarm() {
         if (staticMediaPlayer != null && staticMediaPlayer.isPlaying()) {

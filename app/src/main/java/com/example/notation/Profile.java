@@ -15,7 +15,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -33,6 +32,9 @@ public class Profile extends AppCompatActivity {
             return insets;
         });
 
+        // Busca os dados salvos em sharedPreferences
+        // e preenche na tela com as informações do usuário
+
         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         String name = sharedPreferences.getString("name", "Nenhum nome encontrado");
         String email = sharedPreferences.getString("email", "Nenhum email encontrado");
@@ -42,6 +44,10 @@ public class Profile extends AppCompatActivity {
         profileEmail.setText(email);
         profileName.setText(name);
         AppCompatButton btnTaskCount = findViewById(R.id.btnTaskCount);
+
+        // Busca todas as tarefas que o usuário tem
+        // salvo no firebase e mostra como forma de
+        // alertar ele sobre as tarefas que ele possui
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
@@ -67,6 +73,8 @@ public class Profile extends AppCompatActivity {
     }
 
 
+    // Função que remove todos os dados do usuário de
+    // sharedPrefeences e volta ele para a tela de login
 
     public void logout(View v){
         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
@@ -77,13 +85,14 @@ public class Profile extends AppCompatActivity {
         SharedPreferences.Editor alarmEditor = alarmPrefs.edit();
         alarmEditor.clear().apply();
 
-        AlarmUtils.cancelAllAlarms(this);
+        AlarmUtils.cancelarAlarme(this);
 
         Intent intent = new Intent(Profile.this, Login.class);
         startActivity(intent);
         finish();
     }
 
+    // Cria o Menu de confirmar a exclusão da conta
 
     private void confirmarExclusao() {
         new AlertDialog.Builder(this)
@@ -94,20 +103,20 @@ public class Profile extends AppCompatActivity {
                 .show();
     }
 
+    // Função que deleta a conta do usuário do firebase
+
     private void deletarConta() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (user != null) {
             user.delete()
                     .addOnSuccessListener(aVoid -> {
-                        // Limpa o shared preferences
                         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", MODE_PRIVATE);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.clear().apply();
 
                         Toast.makeText(Profile.this, "Conta deletada com sucesso", Toast.LENGTH_SHORT).show();
 
-                        // Vai para a tela de login
                         startActivity(new Intent(Profile.this, Login.class));
                         finish();
                     })
